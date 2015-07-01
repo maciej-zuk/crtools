@@ -1,0 +1,7 @@
+<ul class="list-group">
+    <li class="list-group-item" ng-if="!ready">Wait..</li>
+    <button type="button" class="list-group-item" ng-repeat="item in items track by $index" ng-click="showDiff(item)">
+    	{{item}} <cr-file-size path="item" revision="revision()"></cr-file-size>
+    </button>
+</ul>
+<cr-diff path="currentPath" revision="currentRevision"></cr-diff>

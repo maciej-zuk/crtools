@@ -1,0 +1,39 @@
+<nav class="navbar navbar-default navbar-fixed-top navbar-subnav">
+    <div class="container">
+        <div class="row navbar-form">
+            <input type="text" class="form-control" placeholder="Author" ng-model="author" ng-model-options="{ debounce: 1000 }">
+            <input type="text" class="form-control" placeholder="Message" ng-model="message" ng-model-options="{ debounce: 1000 }">
+            <input type="text" class="form-control" placeholder="Revision" ng-model="revision" ng-model-options="{ debounce: 1000 }">
+        </div>
+    </div>
+</nav>
+<p class="with-subnav">
+    <div class="row text-center">
+        <div class="col-xs-12">
+            <h3>Showing commits from {{fromDate|date: 'd MMMM y'}} to {{offsetDate|date: 'd MMMM y'}}</h3>
+            <button ng-if="canShowNextBtn" type="button" class="btn btn-default" ng-click="nextTwoWeeks()">Next two weeks</button>
+        </div>
+    </div>
+    <p class="row">
+        <div class="col-xs-12">
+            <div ng-if="!ready">Wait..</div>
+            <ul class="list-group" ng-repeat="item in items | filter: search | orderBy: '-date'">
+                <li class="list-group-item" ng-click="showMore = !showMore">                    
+                    <span class="badge">{{item.rev}}</span>
+                    <h4>{{item.author}} <small> - {{item.date|date: 'H:mm, EEEE, d MMMM y'}}</small></h4> {{item.msg?item.msg:'-'}}
+                    <div class="show-more-less-btn">
+                        <button type="button" class="btn btn-default"><i class="glyphicon" ng-class="{'glyphicon-chevron-up': showMore, 'glyphicon-chevron-down': !showMore}"></i></button>
+                    </div>
+                </li>
+                <div ng-if="showMore">
+                    <cr-files revision="item.rev"></cr-files>
+                </div>
+            </ul>
+        </div>
+    </p>
+    <div class="row text-center">
+        <div class="col-xs-12">
+            <button type="button" class="btn btn-default" ng-click="prevTwoWeeks()">Previous two weeks</button>
+        </div>
+    </div>
+</p>
