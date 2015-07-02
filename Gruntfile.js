@@ -345,7 +345,7 @@ module.exports = function (grunt) {
         'svgmin'
       ],
       serve: [
-        'nodemon:dev',
+        //'nodemon:dev',
         'watch'
       ]
     },
