@@ -150,10 +150,10 @@ angular.module('crtoolsApp')
 					loadDiffData(JSON.parse(e.data));
 				}, false);
 				scope.source.addEventListener('before', function(e) {
-					cleft.append(e.data + '\n');
+					cleft.append(e.data);
 				}, false);
 				scope.source.addEventListener('after', function(e) {
-					cright.append(e.data + '\n');
+					cright.append(e.data);
 				}, false);
 				scope.source.addEventListener('end', function() {
 					scope.source.close();
@@ -167,7 +167,7 @@ angular.module('crtoolsApp')
 			};
 
 			scope.cleanup = function cleanup() {
-				if(scope.source){
+				if (scope.source) {
 					scope.source.removeEventListener();
 					scope.source.close();
 					scope.source = null;
@@ -181,7 +181,7 @@ angular.module('crtoolsApp')
 			};
 
 			scope.$on('loadDiff', function loadDiff() {
-				el.find('.modal').modal().one('hidden.bs.modal', function(){
+				el.find('.modal').modal().one('hidden.bs.modal', function() {
 					setTimeout(scope.cleanup, 100);
 				});
 				scope.cleanup();

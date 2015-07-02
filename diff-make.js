@@ -68,19 +68,19 @@ var makeDiff = function(filename, before, after, diff) {
 	if (diffData.fileType.type === 'code') {
 		var finishedAfter = q.defer();
 		var finishedBefore = q.defer();
-		var beforeLines = (before.match(/[\n\r]/g) || []).length + 1;
-		var afterLines = (after.match(/[\n\r]/g) || []).length + 1;
+		var beforeLines = (before.match(/\n/g) || []).length + 1;
+		var afterLines = (after.match(/\n/g) || []).length + 1;
 		diffData.markers = diffutils.makeMarkers(after, diff);
 		diffData.afterLines = afterLines;
 		diffData.beforeLines = beforeLines;
-		var beforeSplit = before.split(/[\r\n]/);
-		var afterSplit = after.split(/[\r\n]/);
+		var beforeSplit = before.split('\n');
+		var afterSplit = after.split('\n');
 		var beforeSplitIndex = 0;
 		var afterSplitIndex = 0;
 		var runBefore = function() {
 			try {
 				d.notify({
-					before: prism.highlight(beforeSplit[beforeSplitIndex], prism.languages[diffData.fileType.syntax])
+					before: prism.highlight(beforeSplit[beforeSplitIndex], prism.languages[diffData.fileType.syntax]) + "<br>"
 				});
 			} catch (e) {
 				d.reject(e);
@@ -96,7 +96,7 @@ var makeDiff = function(filename, before, after, diff) {
 		var runAfter = function() {
 			try {
 				d.notify({
-					after: prism.highlight(afterSplit[afterSplitIndex], prism.languages[diffData.fileType.syntax])
+					after: prism.highlight(afterSplit[afterSplitIndex], prism.languages[diffData.fileType.syntax]) + "<br>"
 				});
 			} catch (e) {
 				d.reject(e);
@@ -144,8 +144,8 @@ var makeDiff = function(filename, before, after, diff) {
 		}, 10);
 	} else {
 		setTimeout(function() {
-			var beforeLines = (before.match(/[\n\r]/g) || []).length + 1;
-			var afterLines = (after.match(/[\n\r]/g) || []).length + 1;
+			var beforeLines = (before.match(/\n/g) || []).length + 1;
+			var afterLines = (after.match(/\n/g) || []).length + 1;
 			diffData.markers = diffutils.makeMarkers(after, diff);
 			diffData.afterLines = afterLines;
 			diffData.beforeLines = beforeLines;
