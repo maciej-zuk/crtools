@@ -128,8 +128,8 @@ angular.module('crtoolsApp')
 					linenos.html(lines.join('<br>'));
 				};
 				drawMarkers(data.markers);
-				process(cleft, data.after, data.afterLines);
-				process(cright, data.before, data.beforeLines);
+				process(cright, data.after, data.afterLines);
+				process(cleft, data.before, data.beforeLines);
 				el.find('.diff .left, .diff .right').off();
 				el.find('.diff .middle').off();
 				el.find('.diff .middle').on('mousewheel', function(e) {
