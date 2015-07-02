@@ -12,6 +12,7 @@ angular.module('crtoolsApp')
 		link: function link(scope, el) {
 			scope.ready = false;
 			scope.source = null;
+			scope.stopAdding = false;
 
 			var drawMarkers = function drawMarkers(markers) {
 				var cmiddle = el.find('.diff .middle');
@@ -145,46 +146,62 @@ angular.module('crtoolsApp')
 					right: right
 				})));
 				var cleft = el.find('.diff .left .content');
-				var cright = el.find('.diff .right .content');
+				var cright = el.find('.diff .right .content');				
 				scope.source.addEventListener('diffdata', function(e) {
 					loadDiffData(JSON.parse(e.data));
 				}, false);
 				scope.source.addEventListener('before', function(e) {
-					cleft.append(e.data);
+					if(!scope.stopAdding){
+						console.log("ADDING!");
+						cleft.append(e.data);
+					}
 				}, false);
 				scope.source.addEventListener('after', function(e) {
-					cright.append(e.data);
+					if(!scope.stopAdding){
+						console.log("ADDING!");
+						cright.append(e.data);
+					}
 				}, false);
 				scope.source.addEventListener('end', function() {
-					scope.source.close();
+					if(scope.source){
+						scope.source.close();
+					}
 					scope.source = null;
 				}, false);
 				scope.source.addEventListener('error', function() {
-					scope.source.close();
-					scope.cleanup();
+					if(scope.source){
+						scope.source.close();
+						scope.cleanup();
+					}
 					scope.source = null;
 				}, false);
 			};
 
 			scope.cleanup = function cleanup() {
+				scope.stopAdding = true;
 				if (scope.source) {
-					scope.source.removeEventListener();
 					scope.source.close();
 					scope.source = null;
 				}
+				var clearNode = function(node){
+					while (node.firstChild) {
+					    node.removeChild(node.firstChild);
+					}					
+				};
 				el.find('.diff .left, .diff .right, .diff .middle').off();
-				el.find('.diff .left .content').html('');
-				el.find('.diff .right .content').html('');
-				el.find('.diff .left .linenos').html('');
-				el.find('.diff .right .linenos').html('');
-				el.find('.diff .middle').html('');
+				clearNode(el.find('.diff .left .content')[0]);
+				clearNode(el.find('.diff .right .content')[0]);
+				clearNode(el.find('.diff .left .linenos')[0]);
+				clearNode(el.find('.diff .right .linenos')[0]);
+				clearNode(el.find('.diff .middle')[0]);
 			};
 
 			scope.$on('loadDiff', function loadDiff() {
-				el.find('.modal').modal().one('hidden.bs.modal', function() {
-					setTimeout(scope.cleanup, 100);
+				el.find('.modal').modal().one('hidden.bs.modal', function(){
+					setTimeout(scope.cleanup, 200);
 				});
 				scope.cleanup();
+				scope.stopAdding = false;
 				makeDiff(scope.path(), scope.revision() - 1, scope.revision());
 
 			});

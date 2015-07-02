@@ -116,7 +116,7 @@ var makeMarkers = function makeMarkers(file, difffile) {
 			outMarkers.push(marker1);
 			continue;
 		}
-		if (marker1.startBefore === marker2.endBefore - 1 && marker1.startAfter === marker2.endAfter - 1 && marker1.endBefore === marker2.startBefore && marker1.endAfter === marker2.startAfter) {
+		if (marker1.endBefore === marker2.startBefore && marker1.endAfter === marker2.startAfter) {
 			outMarkers.push({
 				type: 'modify',
 				startBefore: marker1.startBefore,
