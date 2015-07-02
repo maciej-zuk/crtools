@@ -73,14 +73,14 @@ var makeDiff = function(filename, before, after, diff) {
 		diffData.markers = diffutils.makeMarkers(after, diff);
 		diffData.afterLines = afterLines;
 		diffData.beforeLines = beforeLines;
-		var beforeSplit = before.split('\n');
-		var afterSplit = after.split('\n');
+		var beforeSplit = before.replace(/\r/gm, '').split('\n');
+		var afterSplit = after.replace(/\r/gm, '').split('\n');
 		var beforeSplitIndex = 0;
 		var afterSplitIndex = 0;
 		var runBefore = function() {
 			try {
 				d.notify({
-					before: prism.highlight(beforeSplit[beforeSplitIndex], prism.languages[diffData.fileType.syntax]) + "<br>"
+					before: prism.highlight(beforeSplit[afterSplitIndex], prism.languages[diffData.fileType.syntax]) + '<br>'
 				});
 			} catch (e) {
 				d.reject(e);
@@ -96,7 +96,7 @@ var makeDiff = function(filename, before, after, diff) {
 		var runAfter = function() {
 			try {
 				d.notify({
-					after: prism.highlight(afterSplit[afterSplitIndex], prism.languages[diffData.fileType.syntax]) + "<br>"
+					after: prism.highlight(afterSplit[afterSplitIndex], prism.languages[diffData.fileType.syntax]) + '<br>'
 				});
 			} catch (e) {
 				d.reject(e);

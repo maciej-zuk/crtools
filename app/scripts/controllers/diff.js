@@ -152,13 +152,11 @@ angular.module('crtoolsApp')
 				}, false);
 				scope.source.addEventListener('before', function(e) {
 					if(!scope.stopAdding){
-						console.log("ADDING!");
 						cleft.append(e.data);
 					}
 				}, false);
 				scope.source.addEventListener('after', function(e) {
 					if(!scope.stopAdding){
-						console.log("ADDING!");
 						cright.append(e.data);
 					}
 				}, false);

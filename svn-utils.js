@@ -61,7 +61,7 @@ var getFileSize = function(path, repo, revision) {
 
 var getFileContent = function(path, revision) {
     var d = q.defer();
-    var cat = spawn('svn', ['cat', '-r', revision, path]);
+    var cat = spawn('svn', ['cat', '-r', revision, path+'@'+revision]);
     var file = '';
     cat.stdout.on('data', function(data) {
         file += data;
