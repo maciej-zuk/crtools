@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "dependencies": {
     "express": "^4.13.0",
-    "highlight.js": "^8.6.0",
+    "prismjs": "0.0.1",
     "q": "^1.4.1"
   },
   "repository": {},

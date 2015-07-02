@@ -11,6 +11,7 @@ angular.module('crtoolsApp')
 		},
 		link: function link(scope, el) {
 			scope.ready = false;
+			scope.source = null;
 
 			var drawMarkers = function drawMarkers(markers) {
 				var cmiddle = el.find('.diff .middle');
@@ -35,9 +36,9 @@ angular.module('crtoolsApp')
 					marker = markers[i];
 					try {
 						leftTop = marker.startAfter * 16 - leftOffset + 8;
-						leftBottom = marker.endAfter * 16  - leftOffset + 8;
-						rightTop = marker.startBefore * 16  - rightOffset + 8;
-						rightBottom = marker.endBefore * 16  - rightOffset + 8;
+						leftBottom = marker.endAfter * 16 - leftOffset + 8;
+						rightTop = marker.startBefore * 16 - rightOffset + 8;
+						rightBottom = marker.endBefore * 16 - rightOffset + 8;
 						if (marker.startBefore === marker.endBefore) {
 							rightTop = rightBottom - 0.5;
 							rightBottom += 0.5;
@@ -55,17 +56,17 @@ angular.module('crtoolsApp')
 							leftTop +
 
 							' Q ' +
-							(cmiddleWidth/4) +
+							(cmiddleWidth / 4) +
 							' ' +
 							leftTop +
 
 							' ' +
-							(cmiddleWidth/2) +
+							(cmiddleWidth / 2) +
 							' ' +
-							((leftTop+rightTop)/2) +
+							((leftTop + rightTop) / 2) +
 
 							' Q ' +
-							(3*cmiddleWidth/4) +
+							(3 * cmiddleWidth / 4) +
 							' ' +
 							rightTop +
 
@@ -86,17 +87,17 @@ angular.module('crtoolsApp')
 							rightBottom +
 
 							' Q ' +
-							(3*cmiddleWidth/4) +
+							(3 * cmiddleWidth / 4) +
 							' ' +
 							rightBottom +
 
 							' ' +
-							(cmiddleWidth/2) +
+							(cmiddleWidth / 2) +
 							' ' +
-							((leftBottom+rightBottom)/2) +
+							((leftBottom + rightBottom) / 2) +
 
 							' Q ' +
-							(cmiddleWidth/4) +
+							(cmiddleWidth / 4) +
 							' ' +
 							leftBottom +
 
@@ -110,67 +111,81 @@ angular.module('crtoolsApp')
 				}
 			};
 
-			var compare = function compare(data) {
+			var loadDiffData = function loadDiffData(data) {
 				var cleft = el.find('.diff .left');
 				var cright = el.find('.diff .right');
-				cleft.empty();
-				cright.empty();
-				var process = function process(target, contentHtml, linesCount) {
-					var linenos = $('<div class="linenos"></div>');
-					var content = $('<div class="content"></div>');
-					content.html(contentHtml);
-				 	target.append(linenos);
-				 	target.append(content);
-				 	var lines = [];				 	
+				var cmiddle = el.find('.diff .middle');
+				var putLines = function process(linenos, linesCount) {
+					var lines = [];
 					for (var i = 0; i < linesCount; i++) {
-						lines.push(i+1);
-					}				 	
+						lines.push(i + 1);
+					}
 					linenos.html(lines.join('<br>'));
 				};
 				drawMarkers(data.markers);
-				process(cright, data.after, data.afterLines);
-				process(cleft, data.before, data.beforeLines);
-				el.find('.diff .left, .diff .right').off();
-				el.find('.diff .middle').off();
-				el.find('.diff .middle').on('mousewheel', function(e) {
-					el.find('.diff .left').scrollTop(el.find('.diff .left').scrollTop() + e.originalEvent.deltaY);
-					el.find('.diff .right').scrollTop(el.find('.diff .right').scrollTop() + e.originalEvent.deltaY);
-
+				putLines(cleft.find('.linenos'), data.beforeLines);
+				putLines(cright.find('.linenos'), data.afterLines);
+				cmiddle.on('mousewheel', function(e) {
+					cleft.scrollTop(cleft.scrollTop() + e.originalEvent.deltaY);
+					cright.scrollTop(cright.scrollTop() + e.originalEvent.deltaY);
 				});
-				el.find('.diff .left, .diff .right').on('scroll', function() {
+				cleft.on('scroll', function() {
+					updateMarkers(data.markers);
+				});
+				cright.on('scroll', function() {
 					updateMarkers(data.markers);
 				});
 				updateMarkers(data.markers);
 			};
 
 			var makeDiff = function makeDiff(file, left, right) {
-				$http.get(buildServerPath('/getDiff/'), {
-					params: {
-						file: file,
-						left: left,
-						right: right
-					},
-					transformResponse: function(data) {
-						return $.parseJSON(data);
-					}
-				}).then(function handleResp(resp) {
-					compare(resp.data);
-				});
+				scope.source = new EventSource(buildServerPath('/getDiff/?' + $.param({
+					file: file,
+					left: left,
+					right: right
+				})));
+				var cleft = el.find('.diff .left .content');
+				var cright = el.find('.diff .right .content');
+				scope.source.addEventListener('diffdata', function(e) {
+					loadDiffData(JSON.parse(e.data));
+				}, false);
+				scope.source.addEventListener('before', function(e) {
+					cleft.append(e.data + '\n');
+				}, false);
+				scope.source.addEventListener('after', function(e) {
+					cright.append(e.data + '\n');
+				}, false);
+				scope.source.addEventListener('end', function() {
+					scope.source.close();
+					scope.source = null;
+				}, false);
+				scope.source.addEventListener('error', function() {
+					scope.source.close();
+					scope.cleanup();
+					scope.source = null;
+				}, false);
 			};
 
-			scope.cleanup = function cleanup(){
-				el.find('.diff .left, .diff .right').off();
-				el.find('.diff .middle').off();
-				scope.diffed = null;
-				scope.stopProcessing = true;
+			scope.cleanup = function cleanup() {
+				if(scope.source){
+					scope.source.removeEventListener();
+					scope.source.close();
+					scope.source = null;
+				}
+				el.find('.diff .left, .diff .right, .diff .middle').off();
+				el.find('.diff .left .content').html('');
+				el.find('.diff .right .content').html('');
+				el.find('.diff .left .linenos').html('');
+				el.find('.diff .right .linenos').html('');
+				el.find('.diff .middle').html('');
 			};
 
 			scope.$on('loadDiff', function loadDiff() {
-				scope.stopProcessing = false;
-				el.find('.modal').modal().one('hidden.bs.modal', scope.cleanup);
-				$timeout(function timeout(){
-					makeDiff(scope.path(), scope.revision() - 1, scope.revision());
-				}, 100);	
+				el.find('.modal').modal().one('hidden.bs.modal', function(){
+					setTimeout(scope.cleanup, 100);
+				});
+				scope.cleanup();
+				makeDiff(scope.path(), scope.revision() - 1, scope.revision());
 
 			});
 

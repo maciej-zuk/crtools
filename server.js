@@ -51,7 +51,35 @@ app.get('/getDiff/', function(request, response) {
     var afterContent = svn.getFileContent(repodir + request.query.file, request.query.right);
     var diffContent = svn.getDiffContent(repodir + request.query.file, request.query.right, request.query.left);
     q.all([beforeContent, afterContent, diffContent]).then(function(results) {
-        response.send(diffmake.makeDiff(request.query.file, results[0], results[1], results[2]));
+        var diffDefered = diffmake.makeDiff(request.query.file, results[0], results[1], results[2]);
+        response.header('Transfer-Encoding', 'chunked');
+        response.writeHead(200, {
+            'Content-Type': 'text/event-stream; charset=UTF-8'
+        });
+        diffDefered.promise.then(function() {
+            response.write('\n\n');
+            response.write('event:end\ndata:\n\n');
+        }, function() {
+            response.write('event:end\ndata:\n\n');
+            response.status(400).send('sync');
+        }, function(data) {
+            if (response.connection.destroyed) {
+                diffDefered.reject();
+                return;
+            }
+            if (data.diffData) {
+                response.write('event:diffdata\n');
+                response.write('data:' + JSON.stringify(data.diffData));
+            } else if (data.before) {
+                response.write('event:before\n');
+                response.write('data:' + data.before);
+            } else if (data.after) {
+                response.write('event:after\n');
+                response.write('data:' + data.after);
+            }
+            response.write('\n\n');
+        });
+
     }, function() {
         response.status(400).send('diff');
     });

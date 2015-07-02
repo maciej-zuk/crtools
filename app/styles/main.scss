@@ -112,6 +112,9 @@ body {
     .marker.remove path {
         fill: #F76A51;
     }
+    .marker.modify path {
+        fill: #F5F05D;
+    }    
 }
 
 cr-files .modal-dialog {
