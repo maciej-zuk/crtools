@@ -59,10 +59,10 @@ body {
     .left {
         flex: 45;
         background: rgba(#eee, 0.25);
-        z-index: 2;        
+        z-index: 2;
         direction: rtl;
         div {
-          direction: ltr;
+            direction: ltr;
         }
     }
     .middle {
@@ -93,7 +93,6 @@ body {
         text-align: center;
         line-height: 16px;
     }
-   
     .hljs {
         padding: 1px;
     }
@@ -114,17 +113,45 @@ body {
     }
     .marker.modify path {
         fill: #F5F05D;
-    }    
+    }
+}
+
+.diff-progress {
+    float: left;
+    width: 20%;
+    margin: 5px;
+}
+
+.fade.ng-enter {
+    transition: opacity 0.15s;
+    opacity: 0;
+}
+
+.fade.ng-enter.ng-enter-active {
+    opacity: 1;
+}
+
+.fade.ng-enter.ng-enter-active {
+    opacity: 1;
+}
+
+.fade.ng-leave {
+    transition: opacity 0.15s;
+    opacity: 1;
+}
+
+.fade.ng-leave.ng-leave-active {
+    opacity: 0;
 }
 
 cr-files .modal-dialog {
-  width: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  margin: 0;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin: 0;
 }
 
 cr-file-size {
-  float: right;
+    float: right;
 }

@@ -1,7 +1,7 @@
 <div class="modal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-body diff-content">  
+            <div class="modal-body diff-content">
                 <div class="diff">
                     <div class="column left">
                         <div class="content"></div>
@@ -16,6 +16,14 @@
                 </div>
             </div>
             <div class="modal-footer">
+                <div class="progress diff-progress fade ng-leave" ng-if="progress">
+                    <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{progress}}" aria-valuemin="0" aria-valuemax="100" style="width: {{progress}}%">
+                        <span class="sr-only">{{progress}}%</span>
+                    </div>
+                </div>
+                Changes commited: {{markers.length}}
+                <button type="button" class="btn btn-default" ng-disabled="prevChangeDisabled" ng-click="scrollToPreviousChange()">Previous change</button>
+                <button type="button" class="btn btn-default" ng-disabled="nextChangeDisabled" ng-click="scrollToNextChange()">Next change</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
         </div>

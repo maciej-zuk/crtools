@@ -10,9 +10,14 @@ angular.module('crtoolsApp')
 			path: '&',
 		},
 		link: function link(scope, el) {
+			scope.fontHeight = 16;
 			scope.ready = false;
 			scope.source = null;
 			scope.stopAdding = false;
+			scope.progress = 0;
+			scope.leftLinesLoaded = 0;
+			scope.rightLinesLoaded = 0;
+			scope.linesCount = 0;
 
 			var drawMarkers = function drawMarkers(markers) {
 				var cmiddle = el.find('.diff .middle');
@@ -36,10 +41,10 @@ angular.module('crtoolsApp')
 				for (var i = 0; i < markers.length; i++) {
 					marker = markers[i];
 					try {
-						leftTop = marker.startAfter * 16 - leftOffset + 8;
-						leftBottom = marker.endAfter * 16 - leftOffset + 8;
-						rightTop = marker.startBefore * 16 - rightOffset + 8;
-						rightBottom = marker.endBefore * 16 - rightOffset + 8;
+						leftTop = marker.startAfter * scope.fontHeight - leftOffset + 8;
+						leftBottom = marker.endAfter * scope.fontHeight - leftOffset + 8;
+						rightTop = marker.startBefore * scope.fontHeight - rightOffset + 8;
+						rightBottom = marker.endBefore * scope.fontHeight - rightOffset + 8;
 						if (marker.startBefore === marker.endBefore) {
 							rightTop = rightBottom - 0.5;
 							rightBottom += 0.5;
@@ -139,6 +144,17 @@ angular.module('crtoolsApp')
 				updateMarkers(data.markers);
 			};
 
+			var updateProgress = function() {
+				var cValue = scope.leftLinesLoaded + scope.rightLinesLoaded;
+				var maxValue = scope.linesCount;
+				scope.progress = Math.ceil(100 * cValue / maxValue);
+				if (scope.progress > 99) {
+					$timeout(function() {
+						scope.progress = 0;
+					}, 1000);
+				}
+			};
+
 			var makeDiff = function makeDiff(file, left, right) {
 				scope.source = new EventSource(buildServerPath('/getDiff/?' + $.param({
 					file: file,
@@ -146,28 +162,45 @@ angular.module('crtoolsApp')
 					right: right
 				})));
 				var cleft = el.find('.diff .left .content');
-				var cright = el.find('.diff .right .content');				
+				var cright = el.find('.diff .right .content');
 				scope.source.addEventListener('diffdata', function(e) {
-					loadDiffData(JSON.parse(e.data));
+					var data = JSON.parse(e.data);
+					scope.markers = data.markers;
+					scope.linesCount = data.beforeLines + data.afterLines;
+					loadDiffData(data);
+					if (scope.markers.length > 0) {
+						scope.$apply(function() {
+							scrollToMarker(0);
+						});
+					}
 				}, false);
 				scope.source.addEventListener('before', function(e) {
-					if(!scope.stopAdding){
+					if (!scope.stopAdding) {
 						cleft.append(e.data);
+						scope.leftLinesLoaded++;
+						if (scope.leftLinesLoaded % 100 === 0) {
+							scope.$apply(updateProgress);
+						}
 					}
 				}, false);
 				scope.source.addEventListener('after', function(e) {
-					if(!scope.stopAdding){
+					if (!scope.stopAdding) {
 						cright.append(e.data);
+						scope.rightLinesLoaded++;
+						if (scope.rightLinesLoaded % 100 === 0) {
+							scope.$apply(updateProgress);
+						}
 					}
 				}, false);
 				scope.source.addEventListener('end', function() {
-					if(scope.source){
+					if (scope.source) {
 						scope.source.close();
 					}
 					scope.source = null;
+					scope.$apply(updateProgress);
 				}, false);
 				scope.source.addEventListener('error', function() {
-					if(scope.source){
+					if (scope.source) {
 						scope.source.close();
 						scope.cleanup();
 					}
@@ -181,10 +214,10 @@ angular.module('crtoolsApp')
 					scope.source.close();
 					scope.source = null;
 				}
-				var clearNode = function(node){
+				var clearNode = function(node) {
 					while (node.firstChild) {
-					    node.removeChild(node.firstChild);
-					}					
+						node.removeChild(node.firstChild);
+					}
 				};
 				el.find('.diff .left, .diff .right, .diff .middle').off();
 				clearNode(el.find('.diff .left .content')[0]);
@@ -195,18 +228,84 @@ angular.module('crtoolsApp')
 			};
 
 			scope.$on('loadDiff', function loadDiff() {
-				el.find('.modal').modal().one('hidden.bs.modal', function(){
+				el.find('.modal').modal().one('hidden.bs.modal', function() {
 					setTimeout(scope.cleanup, 200);
 				});
 				scope.cleanup();
 				scope.stopAdding = false;
+				scope.leftLinesLoaded = 0;
+				scope.rightLinesLoaded = 0;
+				scope.progress = 0.01;
+				scope.linesCount = 0;
 				makeDiff(scope.path(), scope.revision() - 1, scope.revision());
-
 			});
 
 			scope.$on('$destroy', function destroy() {
 				scope.cleanup();
 			});
+
+			var closestChange = function() {
+				if (scope.markers.length === 0) {
+					return null;
+				}
+				var cleft = el.find('.diff .left');
+				var middleLine = Math.ceil((cleft.scrollTop() + cleft.height() / 2) / scope.fontHeight);
+				var closestMarker = Math.abs(scope.markers[0].startBefore - middleLine);
+				var closestMarkerIndex = 0;
+				for (var i = 0; i < scope.markers.length; i++) {
+					var distance = Math.abs(scope.markers[i].startBefore - middleLine);
+					if (distance < closestMarker) {
+						closestMarker = distance;
+						closestMarkerIndex = i;
+					}
+				}
+				return closestMarkerIndex;
+			};
+
+			var scrollToMarker = function(markerIndex) {
+				var marker = scope.markers[markerIndex];
+				var cleft = el.find('.diff .left');
+				var cright = el.find('.diff .right');
+				var positionLeft = ((marker.startBefore + marker.endBefore) * scope.fontHeight / 2) - (cleft.height() / 2);
+				var positionRight = ((marker.startAfter + marker.endAfter) * scope.fontHeight / 2) - (cright.height() / 2);
+				cleft.scrollTop(positionLeft);
+				cright.scrollTop(positionRight);
+				if (markerIndex === 0) {
+					scope.prevChangeDisabled = true;
+				} else {
+					scope.prevChangeDisabled = false;
+				}
+				if (markerIndex === scope.markers.length - 1) {
+					scope.nextChangeDisabled = true;
+				} else {
+					scope.nextChangeDisabled = false;
+				}
+			};
+
+			scope.scrollToPreviousChange = function() {
+				var closestMarkerIndex = closestChange();
+				if (closestMarkerIndex === null) {
+					return;
+				}
+				closestMarkerIndex--;
+				if (closestMarkerIndex < 0) {
+					closestMarkerIndex = 0;
+				}
+				scrollToMarker(closestMarkerIndex);
+			};
+
+			scope.scrollToNextChange = function() {
+				var closestMarkerIndex = closestChange();
+				if (closestMarkerIndex === null) {
+					return;
+				}
+				closestMarkerIndex++;
+				if (closestMarkerIndex >= scope.markers.length) {
+					closestMarkerIndex = scope.markers.length - 1;
+				}
+				scrollToMarker(closestMarkerIndex);
+			};
+
 		}
 	};
 });

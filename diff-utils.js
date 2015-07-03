@@ -33,39 +33,39 @@ var makeMarkers = function makeMarkers(file, difffile) {
 				var rest = diffLine.substr(1);
 				if (cmd === '-') {
 					if (marker && marker.type !== 'add') {
-						marker.endBefore = Math.max(1, before.length);
-						marker.endAfter = Math.max(1, after.length);
+						marker.endBefore = Math.max(0, before.length);
+						marker.endAfter = Math.max(0, after.length);
 						markers.push(marker);
 						marker = null;
 					}
 					if (!marker) {
 						marker = {
 							type: 'add',
-							startBefore: Math.max(1, before.length),
-							startAfter: Math.max(1, after.length)
+							startBefore: Math.max(0, before.length),
+							startAfter: Math.max(0, after.length)
 						};
 					}
 					before.push(rest);
 					fileLine++;
 				} else if (cmd === '+') {
 					if (marker && marker.type !== 'remove') {
-						marker.endBefore = Math.max(1, before.length);
-						marker.endAfter = Math.max(1, after.length);
+						marker.endBefore = Math.max(0, before.length);
+						marker.endAfter = Math.max(0, after.length);
 						markers.push(marker);
 						marker = null;
 					}
 					if (!marker) {
 						marker = {
 							type: 'remove',
-							startBefore: Math.max(1, before.length),
-							startAfter: Math.max(1, after.length)
+							startBefore: Math.max(0, before.length),
+							startAfter: Math.max(0, after.length)
 						};
 					}
 					after.push(rest);
 				} else if (cmd === '@') {
 					if (marker) {
-						marker.endBefore = Math.max(1, before.length);
-						marker.endAfter = Math.max(1, after.length);
+						marker.endBefore = Math.max(0, before.length);
+						marker.endAfter = Math.max(0, after.length);
 						markers.push(marker);
 						marker = null;
 					}
@@ -73,15 +73,15 @@ var makeMarkers = function makeMarkers(file, difffile) {
 					break;
 				} else if (cmd === '\\') {
 					if (marker) {
-						marker.endBefore = Math.max(1, before.length);
-						marker.endAfter = Math.max(1, after.length);
+						marker.endBefore = Math.max(0, before.length);
+						marker.endAfter = Math.max(0, after.length);
 						markers.push(marker);
 						marker = null;
 					}
 				} else {
 					if (marker) {
-						marker.endBefore = Math.max(1, before.length);
-						marker.endAfter = Math.max(1, after.length);
+						marker.endBefore = Math.max(0, before.length);
+						marker.endAfter = Math.max(0, after.length);
 						markers.push(marker);
 						marker = null;
 					}
