@@ -266,8 +266,8 @@ angular.module('crtoolsApp')
 				var marker = scope.markers[markerIndex];
 				var cleft = el.find('.diff .left');
 				var cright = el.find('.diff .right');
-				var positionLeft = ((marker.startBefore + marker.endBefore) * scope.fontHeight / 2) - (cleft.height() / 2);
-				var positionRight = ((marker.startAfter + marker.endAfter) * scope.fontHeight / 2) - (cright.height() / 2);
+				var positionRight = ((marker.startBefore + marker.endBefore) * scope.fontHeight / 2) - (cleft.height() / 2);
+				var positionLeft = ((marker.startAfter + marker.endAfter) * scope.fontHeight / 2) - (cright.height() / 2);
 				cleft.scrollTop(positionLeft);
 				cright.scrollTop(positionRight);
 				if (markerIndex === 0) {
