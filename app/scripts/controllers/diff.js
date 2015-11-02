@@ -8,6 +8,7 @@ angular.module('crtoolsApp')
 		scope: {
 			revision: '&',
 			path: '&',
+			repoName: '&',
 		},
 		link: function link(scope, el) {
 			var lastMarkerIdx = 0;
@@ -160,7 +161,8 @@ angular.module('crtoolsApp')
 				scope.source = new EventSource(buildServerPath('/getDiff/?' + $.param({
 					file: file,
 					left: left,
-					right: right
+					right: right,
+					repoName: scope.repoName()
 				})));
 				var cleft = el.find('.diff .left .content');
 				var cright = el.find('.diff .right .content');

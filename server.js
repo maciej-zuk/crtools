@@ -15,7 +15,7 @@ app.use(function(req, res, next) {
 });
 
 app.get('/getLog/', function(request, response) {
-    svn.getLog(repodir + request.query.file, request.query.fromRev, request.query.toRev).then(function(data) {
+    svn.getLog(repodir + '/' + request.query.repoName + '/' + request.query.file, request.query.fromRev, request.query.toRev).then(function(data) {
         response.set({
             'Content-Type': 'text/xml'
         });
@@ -25,9 +25,16 @@ app.get('/getLog/', function(request, response) {
     });
 });
 
+app.get('/getRepos/', function(request, response) {
+    svn.getRepositories(config.REPOSITORY_ROOT).then(function(data) {
+        response.status(200).send(data);
+    }, function() {
+        response.status(400).send('getrepos');
+    });
+});
 
 app.get('/getFiles/', function(request, response) {
-    svn.getFilesInRevision(repodir + request.query.file, request.query.revision).then(function(data) {
+    svn.getFilesInRevision(repodir + '/' + request.query.repoName + '/' +request.query.file, request.query.revision).then(function(data) {
         response.set({
             'Content-Type': 'text/xml'
         });
@@ -39,7 +46,7 @@ app.get('/getFiles/', function(request, response) {
 
 
 app.get('/getFileSize/', function(request, response) {
-    svn.getFileSize(request.query.file, config.REPOSITORY_ROOT, request.query.revision).then(function(data) {
+    svn.getFileSize(request.query.file, config.REPOSITORY_ROOT + '/' +request.query.repoName, request.query.revision).then(function(data) {
         response.status(200).send(data);
     }, function() {
         response.status(400).send('filesize');
@@ -47,9 +54,9 @@ app.get('/getFileSize/', function(request, response) {
 });
 
 app.get('/getDiff/', function(request, response) {
-    var beforeContent = svn.getFileContent(repodir + request.query.file, request.query.left);
-    var afterContent = svn.getFileContent(repodir + request.query.file, request.query.right);
-    var diffContent = svn.getDiffContent(repodir + request.query.file, request.query.right, request.query.left);
+    var beforeContent = svn.getFileContent(repodir + '/' + request.query.repoName + '/' + request.query.file, request.query.left);
+    var afterContent = svn.getFileContent(repodir + '/' + request.query.repoName + '/' + request.query.file, request.query.right);
+    var diffContent = svn.getDiffContent(repodir + '/' + request.query.repoName + '/' + request.query.file, request.query.right, request.query.left);
     q.all([beforeContent, afterContent, diffContent]).then(function(results) {
         var diffDefered = diffmake.makeDiff(request.query.file, results[0], results[1], results[2]);
         response.header('Transfer-Encoding', 'chunked');
@@ -90,7 +97,7 @@ app.get('/sync/', function(request, response) {
     response.writeHead(200, {
         'Content-Type': 'text/event-stream; charset=UTF-8'
     });
-    svn.syncRepository(repodir).then(function(data) {
+    svn.syncRepository(repodir+'/'+ request.query.path).then(function(data) {
         response.write('event:message\n');
         response.write('data:' + data);
         response.write('\n\n');
@@ -102,6 +109,14 @@ app.get('/sync/', function(request, response) {
         response.write('event:message\n');
         response.write('data:' + data);
         response.write('\n\n');
+    });
+});
+
+app.get('/addRepo/', function(request, response) {
+    svn.createRepository(request.query.url, config.REPOSITORY_ROOT + '/' +request.query.repoName, request.query.login, request.query.password).then(function() {
+        response.status(200).send('ok');
+    }, function(msg) {
+        response.status(400).send(msg);
     });
 });
 

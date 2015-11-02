@@ -11,7 +11,7 @@ angular
   ])
   .config(function ($routeProvider) {
     $routeProvider
-      .when('/', {
+      .when('/repo/:name', {
         templateUrl: 'views/log.html',
         controller: 'SVNLogCtrl'
       })

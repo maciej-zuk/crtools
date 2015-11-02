@@ -2,12 +2,6 @@
 
 Tool for making code reviews from svn repository.
 
-Please fill out config/config.js
-
-as REPOSITORY_ROOT put path to svn repository mirror (yep, not working copy - full mirror is way faster)
-
-[here is how-to](http://www.microhowto.info/howto/mirror_a_subversion_repository.html)
-
 # Screenshots
 
 Dashboard

@@ -21,7 +21,7 @@
                         <span class="sr-only">{{progress}}%</span>
                     </div>
                 </div>
-                Changes commited: {{markers.length}}
+                {{path()}}@{{revision()-1}}:{{revision()}}, Changes commited: {{markers.length}}
                 <button type="button" class="btn btn-default" ng-disabled="prevChangeDisabled" ng-click="scrollToPreviousChange()">Previous change</button>
                 <button type="button" class="btn btn-default" ng-disabled="nextChangeDisabled" ng-click="scrollToNextChange()">Next change</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

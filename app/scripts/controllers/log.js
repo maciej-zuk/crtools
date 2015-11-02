@@ -1,7 +1,8 @@
 'use strict';
 
 angular.module('crtoolsApp')
-	.controller('SVNLogCtrl', function($scope, $http, $filter) {
+	.controller('SVNLogCtrl', function($scope, $http, $filter, $routeParams) {
+		$scope.repoName = $routeParams.name;
 		$scope.offsetDate = new Date();
 		$scope.loadData = function() {
 			$scope.items = [];
@@ -13,6 +14,7 @@ angular.module('crtoolsApp')
 			$http.get(buildServerPath('/getLog/'), {
 				params: {
 					file: '/',
+					repoName: $scope.repoName,
 					fromRev: $filter('date')($scope.fromDate, '{yyyy-MM-dd}'),
 					toRev: $filter('date')($scope.toDate, '{yyyy-MM-dd}'),
 				},
@@ -21,8 +23,13 @@ angular.module('crtoolsApp')
 				}
 			}).then(function(resp) {
 				var entries = resp.data.getElementsByTagName('logentry');
-				angular.forEach(entries, function(entry) {
-					var author = entry.getElementsByTagName('author')[0].textContent;
+				angular.forEach(entries, function(entry) {					
+					var author = entry.getElementsByTagName('author');
+					if(author.length) {
+						author = author[0].textContent;
+					}else{
+						author = "unknown";
+					}
 					var date = new Date(entry.getElementsByTagName('date')[0].textContent);
 					var msg = entry.getElementsByTagName('msg')[0].textContent;
 					var rev = entry.getAttribute('revision');
@@ -67,8 +74,10 @@ angular.module('crtoolsApp')
 			$scope.loadData();
 		};
 		$scope.loadData();
-		$scope.$on('repoSynced', function() {
-			$scope.loadData();
+		$scope.$on('repoSynced', function(name) {
+			if(name === $scope.repoName){
+				$scope.loadData();
+			}
 		});
 	})
 
@@ -91,12 +100,15 @@ angular.module('crtoolsApp')
 		template: '{{size|bytes}}',
 		scope: {
 			revision: '&',
-			path: '&'
+			path: '&',
+			repoName: '&',
+			size: '=',
 		},
 		link: function(scope, el) {
 			$http.get(buildServerPath('/getFileSize'), {
 				params: {
 					file: scope.path(),
+					repoName: scope.repoName(),
 					revision: scope.revision(),
 				}
 			}).then(function(resp) {
@@ -117,12 +129,14 @@ angular.module('crtoolsApp')
 		templateUrl: 'views/files.html',
 		scope: {
 			revision: '&',
+			repoName: '&'
 		},
-		link: function(scope, el) {
+		link: function(scope) {
 			scope.ready = false;
 			$http.get(buildServerPath('/getFiles'), {
 				params: {
 					file: '/',
+					repoName: scope.repoName(),
 					revision: scope.revision(),
 				},
 				transformResponse: function(data) {
@@ -137,10 +151,12 @@ angular.module('crtoolsApp')
 				scope.ready = true;
 			});
 
-			scope.showDiff = function(path) {
-				scope.currentPath = path;
-				scope.currentRevision = scope.revision();
-				scope.$broadcast('loadDiff');				
+			scope.showDiff = function(path, size) {
+				if(size>0){
+					scope.currentPath = path;
+					scope.currentRevision = scope.revision();
+					scope.$broadcast('loadDiff');				
+				}
 			};
 		}
 	};

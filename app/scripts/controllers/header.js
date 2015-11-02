@@ -1,31 +1,35 @@
 'use strict';
 
 angular.module('crtoolsApp')
-	.controller('HeaderCtrl', function($scope, $rootScope) {
-		$scope.sync = function(){
-			var data = 'Repo synchronization....\n';
-			$('#syncModal').modal({backdrop: 'static'});
-			$('#syncModal .modal-body').text(data);
-			$('#syncModal .modal-footer').hide();
-			var source = new EventSource(buildServerPath('/sync/'));
-			source.addEventListener('message', function(e) {
-				data += e.data+'\n';
-				$('#syncModal .modal-body').text(data);
+	.controller('HeaderCtrl', ['$scope', '$rootScope', '$http', '$filter', function($scope, $rootScope, $http, $filter) {
+		$scope.repos = [];
+		$scope.getRepos = function(){
+			$http.get(buildServerPath('/getRepos/')).then(function(resp) {
+				$scope.repos = $filter('orderBy')(resp.data, 'name');
+				for(var i=0; i<$scope.repos.length; i++){
+					$scope.sync($scope.repos[i]);
+				}
+			});
+		};
+		$scope.sync = function(repository){
+			repository.synced = false;
+			var source = new EventSource(buildServerPath('/sync/?path='+repository.path));
+			source.addEventListener('message', function() {
 			}, false);
 			source.addEventListener('end', function() {
 				source.close();
-				data += 'Finished.';
-				$('#syncModal .modal-body').text(data);
-				$('#syncModal .modal-footer').fadeIn();
 				$rootScope.$apply(function(){
-					$rootScope.$broadcast('repoSynced');
+					$rootScope.$broadcast('repoSynced', repository.path);
+					repository.synced = true;
 				});
 			}, false);
 			source.addEventListener('error', function() {
 				source.close();
-				data += 'Error!';
-				$('#syncModal .modal-body').text(data);
-				$('#syncModal .modal-footer').fadeIn();
 			}, false);
 		};
-	});
+		$scope.addRepo = function(){
+			$rootScope.$broadcast('addRepoOpened');
+		};
+		$scope.getRepos();
+		$scope.$on('repoAdded', $scope.getRepos);
+	}]);
