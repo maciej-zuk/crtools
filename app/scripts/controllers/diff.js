@@ -10,6 +10,7 @@ angular.module('crtoolsApp')
 			path: '&',
 		},
 		link: function link(scope, el) {
+			var lastMarkerIdx = 0;
 			scope.fontHeight = 16;
 			scope.ready = false;
 			scope.source = null;
@@ -282,28 +283,34 @@ angular.module('crtoolsApp')
 				}
 			};
 
-			scope.scrollToPreviousChange = function() {
+			scope.scrollToPreviousChange = function() {				
 				var closestMarkerIndex = closestChange();
 				if (closestMarkerIndex === null) {
 					return;
 				}
-				closestMarkerIndex--;
+				while(closestMarkerIndex >= lastMarkerIdx){
+					closestMarkerIndex--;
+				}
 				if (closestMarkerIndex < 0) {
 					closestMarkerIndex = 0;
 				}
 				scrollToMarker(closestMarkerIndex);
+				lastMarkerIdx = closestMarkerIndex;
 			};
 
-			scope.scrollToNextChange = function() {
+			scope.scrollToNextChange = function() {				
 				var closestMarkerIndex = closestChange();
 				if (closestMarkerIndex === null) {
 					return;
 				}
-				closestMarkerIndex++;
+				while(closestMarkerIndex <= lastMarkerIdx){
+					closestMarkerIndex++;
+				}
 				if (closestMarkerIndex >= scope.markers.length) {
 					closestMarkerIndex = scope.markers.length - 1;
 				}
 				scrollToMarker(closestMarkerIndex);
+				lastMarkerIdx = closestMarkerIndex;
 			};
 
 		}

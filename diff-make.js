@@ -80,7 +80,7 @@ var makeDiff = function(filename, before, after, diff) {
 		var runBefore = function() {
 			try {
 				d.notify({
-					before: prism.highlight(beforeSplit[afterSplitIndex], prism.languages[diffData.fileType.syntax]) + '<br>'
+					before: prism.highlight(beforeSplit[beforeSplitIndex], prism.languages[diffData.fileType.syntax]) + '<br>'
 				});
 			} catch (e) {
 				d.reject(e);
