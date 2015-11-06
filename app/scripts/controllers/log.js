@@ -55,13 +55,13 @@ angular.module('crtoolsApp')
         $scope.search = function(row) {
             var pass = true;
             if ($scope.author) {
-                pass = pass && (angular.lowercase(row.author).indexOf($scope.author) !== -1);
+                pass = pass && (angular.lowercase(row.author).indexOf(angular.lowercase($scope.author)) !== -1);
             }
             if (pass && $scope.message) {
-                pass = pass && (angular.lowercase(row.msg).indexOf($scope.message) !== -1);
+                pass = pass && (angular.lowercase(row.msg).indexOf(angular.lowercase($scope.message)) !== -1);
             }
             if (pass && $scope.revision) {
-                pass = pass && (angular.lowercase('' + row.rev).indexOf($scope.revision) !== -1);
+                pass = pass && (angular.lowercase('' + row.rev).indexOf(angular.lowercase($scope.revision)) !== -1);
             }
             return pass;
         };
