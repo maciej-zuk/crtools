@@ -3,6 +3,7 @@
   "license": "LGPL-3.0",
   "version": "0.1.0",
   "dependencies": {
+    "escape-html": "^1.0.3",
     "express": "^4.13.0",
     "prismjs": "0.0.1",
     "q": "^1.4.1"

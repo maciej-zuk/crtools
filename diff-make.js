@@ -2,6 +2,7 @@
 var diffutils = require('./diff-utils');
 var prism = require('prismjs');
 var q = require('q');
+var escape = require('escape-html');
 
 
 var guessType = function(filename) {
@@ -73,6 +74,14 @@ var makeDiff = function(filename, before, after, diff) {
 		diffData.markers = diffutils.makeMarkers(after, diff);
 		diffData.afterLines = afterLines;
 		diffData.beforeLines = beforeLines;
+
+		if(!before){
+			before = '(empty file)';
+		}
+		if(!after){
+			after = '(empty file)';
+		}
+
 		var beforeSplit = before.replace(/\r/gm, '').split('\n');
 		var afterSplit = after.replace(/\r/gm, '').split('\n');
 		var beforeSplitIndex = 0;
@@ -135,10 +144,10 @@ var makeDiff = function(filename, before, after, diff) {
 				diffData: diffData
 			});
 			d.notify({
-				after: 'data:' + diffData.fileType.mime + ';base64,' + (new Buffer(after)).toString('base64')
+				after: after ? 'data:' + diffData.fileType.mime + ';base64,' + (new Buffer(after, 'binary')).toString('base64') : null
 			});
 			d.notify({
-				before: 'data:' + diffData.fileType.mime + ';base64,' + (new Buffer(before)).toString('base64')
+				before: before ? 'data:' + diffData.fileType.mime + ';base64,' + (new Buffer(before, 'binary')).toString('base64') : null
 			});
 			d.resolve();
 		}, 10);
@@ -146,18 +155,25 @@ var makeDiff = function(filename, before, after, diff) {
 		setTimeout(function() {
 			var beforeLines = (before.match(/\n/g) || []).length + 1;
 			var afterLines = (after.match(/\n/g) || []).length + 1;
+			var beforeSplit = before.replace(/\r/gm, '').split('\n');
+			var afterSplit = after.replace(/\r/gm, '').split('\n');
 			diffData.markers = diffutils.makeMarkers(after, diff);
 			diffData.afterLines = afterLines;
 			diffData.beforeLines = beforeLines;
+
 			d.notify({
 				diffData: diffData
 			});
-			d.notify({
-				after: after
-			});
-			d.notify({
-				before: before
-			});
+			for(var al = 0; al < afterLines; al++){
+				d.notify({
+					after: escape(afterSplit[al])+'<br>'
+				});
+			}
+			for(var bl = 0; bl < beforeLines; bl++){
+				d.notify({
+					before: escape(beforeSplit[bl])+'<br>'
+				});
+			}
 			d.resolve();
 		}, 10);
 	}

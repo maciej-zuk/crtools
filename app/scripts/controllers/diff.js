@@ -22,6 +22,9 @@ angular.module('crtoolsApp')
 			scope.linesCount = 0;
 
 			var drawMarkers = function drawMarkers(markers) {
+				if(!markers){
+					return;
+				}
 				var cmiddle = el.find('.diff .middle');
 				cmiddle.empty();
 				for (var i = 0; i < markers.length; i++) {
@@ -35,6 +38,9 @@ angular.module('crtoolsApp')
 			};
 
 			var updateMarkers = function updateMarkers(markers) {
+				if(!markers){
+					return;
+				}
 				var windowOffset = $('body').scrollTop();
 				var leftTop, leftBottom, rightTop, rightBottom, marker;
 				var cmiddleWidth = el.find('.diff .middle').outerWidth();
@@ -123,27 +129,32 @@ angular.module('crtoolsApp')
 				var cleft = el.find('.diff .left');
 				var cright = el.find('.diff .right');
 				var cmiddle = el.find('.diff .middle');
-				var putLines = function process(linenos, linesCount) {
-					var lines = [];
-					for (var i = 0; i < linesCount; i++) {
-						lines.push(i + 1);
-					}
-					linenos.html(lines.join('<br>'));
-				};
-				drawMarkers(data.markers);
-				putLines(cleft.find('.linenos'), data.beforeLines);
-				putLines(cright.find('.linenos'), data.afterLines);
+				if(data.fileType.type === 'image'){
+					cleft.find('.content').append($('<img>'));
+					cright.find('.content').append($('<img>'));
+				}else{
+					var putLines = function process(linenos, linesCount) {
+						var lines = [];
+						for (var i = 0; i < linesCount; i++) {
+							lines.push(i + 1);
+						}
+						linenos.html(lines.join('<br>'));
+					};
+					drawMarkers(data.markers);
+					putLines(cleft.find('.linenos'), data.beforeLines);
+					putLines(cright.find('.linenos'), data.afterLines);
+					cleft.on('scroll', function() {
+						updateMarkers(data.markers);
+					});
+					cright.on('scroll', function() {
+						updateMarkers(data.markers);
+					});
+					updateMarkers(data.markers);
+				}
 				cmiddle.on('mousewheel', function(e) {
 					cleft.scrollTop(cleft.scrollTop() + e.originalEvent.deltaY);
 					cright.scrollTop(cright.scrollTop() + e.originalEvent.deltaY);
 				});
-				cleft.on('scroll', function() {
-					updateMarkers(data.markers);
-				});
-				cright.on('scroll', function() {
-					updateMarkers(data.markers);
-				});
-				updateMarkers(data.markers);
 			};
 
 			var updateProgress = function() {
@@ -170,8 +181,9 @@ angular.module('crtoolsApp')
 					var data = JSON.parse(e.data);
 					scope.markers = data.markers;
 					scope.linesCount = data.beforeLines + data.afterLines;
+					scope.type = data.fileType.type;
 					loadDiffData(data);
-					if (scope.markers.length > 0) {
+					if (scope.markers && scope.markers.length > 0) {
 						scope.$apply(function() {
 							scrollToMarker(0);
 						});
@@ -179,7 +191,12 @@ angular.module('crtoolsApp')
 				}, false);
 				scope.source.addEventListener('before', function(e) {
 					if (!scope.stopAdding) {
-						cleft.append(e.data);
+						if(scope.type === 'image'){							
+							cleft.find('img').prop('src', e.data);
+						}
+						else{
+							cleft.append(e.data);
+						}
 						scope.leftLinesLoaded++;
 						if (scope.leftLinesLoaded % 100 === 0) {
 							scope.$apply(updateProgress);
@@ -188,7 +205,12 @@ angular.module('crtoolsApp')
 				}, false);
 				scope.source.addEventListener('after', function(e) {
 					if (!scope.stopAdding) {
-						cright.append(e.data);
+						if(scope.type === 'image'){
+							cright.find('img').prop('src', e.data);
+						}
+						else{
+							cright.append(e.data);
+						}
 						scope.rightLinesLoaded++;
 						if (scope.rightLinesLoaded % 100 === 0) {
 							scope.$apply(updateProgress);

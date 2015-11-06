@@ -1,10 +1,15 @@
 'use strict';
 var _spawn = require('child_process').spawn;
+var _exec = require('child_process').exec;
 var fs = require('fs');
-var path = require("path");
+var path = require('path');
 var spawn = function(cmd, args) {
     console.log('spawn: ', cmd, args.join(' '));
     return _spawn(cmd, args);
+};
+var exec = function(cmd, options, cb) {
+    console.log('exec: ', cmd);
+    return _exec(cmd, options, cb);
 };
 var q = require('q');
 var getLog = function(path, fromRev, toRev) {
@@ -57,17 +62,9 @@ var getFileSize = function(path, repo, revision) {
 };
 var getFileContent = function(path, revision) {
     var d = q.defer();
-    var cat = spawn('svn', ['cat', '-r', revision, path + '@' + revision]);
-    var file = '';
-    cat.stdout.on('data', function(data) {
-        file += data;
-    });
-    cat.on('close', function(code) {
-        if (code !== 0) {
-            d.resolve('');
-        } else {
-            d.resolve(file);
-        }
+    var cmd = ['svn', 'cat', '-r', revision, path + '@' + revision].join(' ');
+    exec(cmd, {encoding: 'binary', maxBuffer: 5000*1024}, function(error, stdout) {
+        d.resolve(stdout);
     });
     return d.promise;
 };
