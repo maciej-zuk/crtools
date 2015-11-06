@@ -63,7 +63,10 @@ var getFileSize = function(path, repo, revision) {
 var getFileContent = function(path, revision) {
     var d = q.defer();
     var cmd = ['svn', 'cat', '-r', revision, path + '@' + revision].join(' ');
-    exec(cmd, {encoding: 'binary', maxBuffer: 5000*1024}, function(error, stdout) {
+    exec(cmd, {
+        encoding: 'binary',
+        maxBuffer: 5000 * 1024
+    }, function(error, stdout) {
         d.resolve(stdout);
     });
     return d.promise;
@@ -71,7 +74,7 @@ var getFileContent = function(path, revision) {
 var getDiffContent = function(path, fromRev, toRev) {
     var d = q.defer();
     var diffFile = '';
-    var diff = spawn('svn', ['diff', '-r', fromRev + ':' + toRev, path]);
+    var diff = spawn('svn', ['diff', '-r', fromRev + ':' + toRev, path, '-x', '--ignore-eol-style --ignore-all-space']);
     diff.stdout.on('data', function(data) {
         diffFile += data;
     });
@@ -136,11 +139,11 @@ var getRepositories = function(root) {
 
 var rmdirRec = function(dir) {
     var list = fs.readdirSync(dir);
-    for(var i = 0; i < list.length; i++) {
+    for (var i = 0; i < list.length; i++) {
         var filename = path.join(dir, list[i]);
         var stat = fs.statSync(filename);
-        
-        if(stat.isDirectory()) {
+
+        if (stat.isDirectory()) {
             rmdirRec(filename);
         } else {
             fs.unlinkSync(filename);
@@ -149,38 +152,38 @@ var rmdirRec = function(dir) {
     fs.rmdirSync(dir);
 };
 
-var createRepository = function(url, path, login, password){
+var createRepository = function(url, path, login, password) {
     var d = q.defer();
-    spawn('svnadmin', ['create', path]).on('close', function(ret){
-        if(ret !== 0){
+    spawn('svnadmin', ['create', path]).on('close', function(ret) {
+        if (ret !== 0) {
             d.reject('Repository already exists!');
             return;
         }
-        var prop = fs.openSync(path+'/hooks/pre-revprop-change', 'w');
+        var prop = fs.openSync(path + '/hooks/pre-revprop-change', 'w');
         fs.writeSync(prop, '#!/bin/sh');
         fs.closeSync(prop);
-        try{
-            fs.chmodSync(path+'/hooks/pre-revprop-change', '755');
-        }catch(e){}
+        try {
+            fs.chmodSync(path + '/hooks/pre-revprop-change', '755');
+        } catch (e) {}
         var sync = spawn('svnsync', [
-            'init', 
-            'file://'+path, 
-            url, 
-            '--source-trust-server-cert-failures=unknown-ca,cn-mismatch', 
-            '--non-interactive', 
-            '--source-username', 
-            login, 
-            '--source-password', 
+            'init',
+            'file://' + path,
+            url,
+            '--source-trust-server-cert-failures=unknown-ca,cn-mismatch',
+            '--non-interactive',
+            '--source-username',
+            login,
+            '--source-password',
             password
         ]);
         var syncout = '';
         sync.stderr.on('data', function(data) {
             syncout += data;
         });
-        sync.on('close', function(ret){
-            if(ret !== 0){
+        sync.on('close', function(ret) {
+            if (ret !== 0) {
                 rmdirRec(path);
-                d.reject('Error when syncing: \n'+syncout);
+                d.reject('Error when syncing: \n' + syncout);
                 return;
             }
             d.resolve();
