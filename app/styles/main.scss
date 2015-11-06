@@ -49,9 +49,8 @@ body {
         z-index: 2;
     }
     .column {
-        padding: 10px;
         overflow-y: scroll;
-        overflow-x: auto;
+        overflow-x: scroll;
         font-family: monospace;
         position: relative;
         line-height: 16px;
@@ -61,8 +60,10 @@ body {
         background: rgba(#eee, 0.25);
         z-index: 2;
         direction: rtl;
-        div {
+        & .content-wrap {
             direction: ltr;
+            display: table;
+            position: relative;
         }
     }
     .middle {
@@ -79,9 +80,7 @@ body {
         z-index: 2;
     }
     .content {
-        position: absolute;
-        left: 45px;
-        top: 0;
+        margin-left: 45px;
         white-space: pre;
     }
     .linenos {
@@ -156,21 +155,24 @@ cr-file-size {
     float: right;
 }
 
-
-[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak],
-.ng-cloak, .x-ng-cloak,
+[ng\:cloak],
+[ng-cloak],
+[data-ng-cloak],
+[x-ng-cloak],
+.ng-cloak,
+.x-ng-cloak,
 .ng-hide:not(.ng-hide-animate) {
-  display: none !important;
+    display: none !important;
 }
 
 ng\:form {
-  display: block;
+    display: block;
 }
 
 .ng-animate-shim {
-  visibility:hidden;
+    visibility: hidden;
 }
 
 .ng-anchor {
-  position:absolute;
+    position: absolute;
 }

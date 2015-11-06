@@ -221,6 +221,7 @@ angular.module('crtoolsApp')
                     }
                     scope.source = null;
                     scope.$apply(updateProgress);
+                    el.find('.column').scrollLeft(0);
                 }, false);
                 scope.source.addEventListener('error', function() {
                     if (scope.source) {
