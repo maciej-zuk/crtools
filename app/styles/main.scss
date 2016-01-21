@@ -6,6 +6,32 @@ body {
     padding: 0;
 }
 
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-button {
+    width: 0px;
+    height: 0px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #666666;
+    border: 0;
+    border-radius: 50px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+    border: 0;
+    border-radius: 50px;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
 .header,
 .marketing,
 .footer {
@@ -32,8 +58,9 @@ body {
 
 .show-more-less-btn {
     position: absolute;
-    top: 33px;
-    right: 17px;
+    bottom: 20px;
+    right: 15px;
+    opacity: 0.5;
 }
 
 .diff {
@@ -112,6 +139,33 @@ body {
     }
     .marker.modify path {
         fill: #F5F05D;
+    }
+    .marks {
+        position: relative;
+        top: 0;
+        width: 0;
+        overflow: visible;
+        height: calc(100% - 8px);
+        background: #eee;
+        z-index: 2;
+        .mark {
+            position: absolute;
+            width: 8px;
+            padding: 0;
+            &.mark-add {
+                background: rgb(138, 229, 93);
+            }
+            &.mark-remove {
+                background: #F76A51;
+            }
+            &.mark-modify {
+                background: #F2DF82;
+            }
+        }
+        &.marks-right {
+            right: 8px;
+            z-index: 1;
+        }
     }
 }
 

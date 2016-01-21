@@ -37,11 +37,36 @@ angular.module('crtoolsApp')
                 }
             };
 
+            var drawMarks = function drawMarks(data) {
+                if (!data.markers) {
+                    return;
+                }
+                var leftMarks = el.find('.diff .marks-left');
+                var rightMarks = el.find('.diff .marks-right');
+                leftMarks.empty();
+                rightMarks.empty();
+                for (var i = 0; i < data.markers.length; i++) {
+                    var marker = data.markers[i];
+                    var leftElm = $('<div class="mark mark-' + marker.type + '">');
+                    leftElm.css({
+                        top: (100 * marker.startAfter / data.beforeLines) + '%',
+                        height: (100 * (marker.endAfter - marker.startAfter + 1) / data.beforeLines) + '%',
+                    });
+                    leftMarks.append(leftElm);
+                    var rightElm = $('<div class="mark mark-' + marker.type + '">');
+                    rightElm.css({
+                        top: (100 * marker.startBefore / data.afterLines) + '%',
+                        height: (100 * (marker.endBefore - marker.startBefore + 1) / data.afterLines) + '%',
+                    });
+                    rightMarks.append(rightElm);
+
+                }
+            };
+
             var updateMarkers = function updateMarkers(markers) {
                 if (!markers) {
                     return;
                 }
-                var windowOffset = $('body').scrollTop();
                 var leftTop, leftBottom, rightTop, rightBottom, marker;
                 var cmiddleWidth = el.find('.diff .middle').outerWidth();
                 var leftOffset = el.find('.diff .left').scrollTop();
@@ -141,6 +166,7 @@ angular.module('crtoolsApp')
                         linenos.html(lines.join('<br>'));
                     };
                     drawMarkers(data.markers);
+                    drawMarks(data);
                     putLines(cleft.find('.linenos'), data.beforeLines);
                     putLines(cright.find('.linenos'), data.afterLines);
                     cleft.on('scroll', function() {
